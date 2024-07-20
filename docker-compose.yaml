@@ -1,0 +1,87 @@
+services:
+  kong-db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+
+  kong-migration:
+    image: kong:2.6
+    command: kong migrations bootstrap
+    depends_on:
+      - kong-db
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-db
+      KONG_PG_PASSWORD: ${POSTGRES_PASSWORD}
+
+  kong:
+    image: kong:2.6
+    depends_on:
+      - kong-migration
+      - kong-db
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-db
+      KONG_PG_PASSWORD: ${POSTGRES_PASSWORD}
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+
+  db-talos:
+    build:
+      context: ./files/mongodb
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "27017:27017"
+    privileged: true
+    volumes:
+      - db-talos-data-cni:/etc/cni
+      - db-talos-data-containers:/var/lib/containers
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+
+  aphrodite-service:
+    image: registry.gitlab.com/talos/talos-aphrodite-service:latest
+    depends_on:
+      - db-talos
+    ports:
+      - "5000:5000"
+    environment:
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27017/aphrodite
+
+  plutus-service:
+    image: registry.gitlab.com/talos/talos-plutus-service:latest
+    depends_on:
+      - db-talos
+    ports:
+      - "5001:5001"
+    environment:
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27017/plutus
+
+  talos-interface:
+    image: registry.gitlab.com/talos/talos-interface:main
+    ports:
+      - "8080:80"
+
+volumes:
+  db-talos-data-cni:
+  db-talos-data-containers:
