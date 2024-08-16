@@ -1,8 +1,4 @@
 services:
-  base:
-    env_file:
-      - path: ./sample.env
-
   kong-db:
     image: postgres:13
     environment:
@@ -15,8 +11,6 @@ services:
   kong-migration:
     image: kong:2.6
     command: kong migrations bootstrap
-    extends:
-      service: base
     depends_on:
       - kong-db
     environment:
@@ -26,8 +20,6 @@ services:
 
   kong:
     image: kong:2.6
-    extends:
-      service: base
     depends_on:
       - kong-migration
       - kong-db
@@ -47,8 +39,6 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    extends:
-      service: base
     ports:
       - "3000:3000"
     environment:
@@ -58,8 +48,6 @@ services:
     build:
       context: ./files/mongodb
       dockerfile: Dockerfile
-    extends:
-      service: base
     restart: always
     ports:
       - "27018:27017"
@@ -73,19 +61,16 @@ services:
 
   aphrodite-service:
     image: registry.gitlab.com/talos8645929/talos-service-aphrodite:latest
-    extends:
-      service: base
     depends_on:
       - db-talos
     ports:
       - "8400:80"
     environment:
       MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27018/aphrodite
+      TALOS_ML_URL: ${TALOS_ML_URL}
 
   plutus-service:
-    image: registry.gitlab.com/talos8645929/talos-service-aphrodite:latest
-    extends:
-      service: base
+    image: registry.gitlab.com/talos8645929/talos-service-plutus:latest
     depends_on:
       - db-talos
     ports:
