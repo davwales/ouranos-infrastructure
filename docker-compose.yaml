@@ -64,7 +64,7 @@ services:
     depends_on:
       - db-talos
     ports:
-      - "8400:80"
+      - "8400:8080"
     environment:
       MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27018/aphrodite
       TALOS_ML_URL: ${TALOS_ML_URL}
@@ -74,7 +74,7 @@ services:
     depends_on:
       - db-talos
     ports:
-      - "8401:80"
+      - "8401:8080"
     environment:
       MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27018/plutus
   #talos-interface:
