@@ -1,4 +1,4 @@
-FROM mongodb/atlas
+FROM mongodb/atlas:v1.25.0
 
 RUN yum install -y mongodb-database-tools
 

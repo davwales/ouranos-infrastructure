@@ -1,0 +1,49 @@
+services:
+  db-talos:
+    container_name: db-talos
+    build:
+      context: ./mongodb
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "27018:27017"
+    privileged: true
+    volumes:
+      - db-talos-data-cni:/etc/cni
+      - db-talos-data-containers:/var/lib/containers
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+
+  aphrodite-service:
+    image: registry.gitlab.com/talos8645929/talos-service-aphrodite:latest
+    depends_on:
+      - db-talos
+    ports:
+      - "8300:8300"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: 8300
+      Talos__IncludeExceptionDetails: true
+      MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27017/aphrodite?authSource=admin
+      TALOS_ML_URL: ${TALOS_ML_URL}
+
+  plutus-service:
+    image: registry.gitlab.com/talos8645929/talos-service-plutus:latest
+    depends_on:
+      - db-talos
+    ports:
+      - "8301:8301"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: 8301
+      Talos__IncludeExceptionDetails: true
+      MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27017/plutus?authSource=admin
+  #talos-interface:
+  #  image: registry.gitlab.com/talos/talos-interface:main
+  #  ports:
+  #    - "8080:80"
+
+volumes:
+  db-talos-data-cni:
+  db-talos-data-containers:

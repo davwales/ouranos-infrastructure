@@ -1,0 +1,38 @@
+services:
+  db-kong:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+
+  kong-migration:
+    image: kong:2.6
+    command: kong migrations bootstrap
+    depends_on:
+      - db-kong
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: db-kong
+      KONG_PG_PASSWORD: ${POSTGRES_PASSWORD}
+
+  kong:
+    image: kong:2.6
+    depends_on:
+      - kong-migration
+      - db-kong
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: db-kong
+      KONG_PG_PASSWORD: ${POSTGRES_PASSWORD}
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
