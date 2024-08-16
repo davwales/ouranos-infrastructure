@@ -1,4 +1,8 @@
 services:
+  env_file:
+    - path: ./sample.env
+      required: true
+
   kong-db:
     image: postgres:13
     environment:
