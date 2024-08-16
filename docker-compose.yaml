@@ -66,7 +66,7 @@ services:
     ports:
       - "8400:80"
     environment:
-      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27018/aphrodite
+      MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27018/aphrodite
 
   plutus-service:
     image: registry.gitlab.com/talos8645929/talos-service-aphrodite:latest
@@ -75,7 +75,7 @@ services:
     ports:
       - "8401:80"
     environment:
-      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27018/plutus
+      MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27018/plutus
   #talos-interface:
   #  image: registry.gitlab.com/talos/talos-interface:main
   #  ports:
