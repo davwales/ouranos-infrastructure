@@ -16,20 +16,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
 
   aphrodite-service:
+    container_name: aphrodite
     image: registry.gitlab.com/talos8645929/talos-service-aphrodite:latest
-    depends_on:
-      - db-talos
-    ports:
-      - "8300:8300"
-    environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      ASPNETCORE_HTTP_PORTS: 8300
-      Talos__IncludeExceptionDetails: true
-      MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27017/aphrodite?authSource=admin
-      TALOS_ML_URL: ${TALOS_ML_URL}
-
-  plutus-service:
-    image: registry.gitlab.com/talos8645929/talos-service-plutus:latest
     depends_on:
       - db-talos
     ports:
@@ -38,7 +26,34 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: 8301
       Talos__IncludeExceptionDetails: true
+      MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27017/aphrodite?authSource=admin
+      TALOS_ML_URL: ${TALOS_ML_URL}
+
+  plutus-service:
+    container_name: plutus
+    image: registry.gitlab.com/talos8645929/talos-service-plutus:latest
+    depends_on:
+      - db-talos
+    ports:
+      - "8302:8302"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: 8302
+      Talos__IncludeExceptionDetails: true
       MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27017/plutus?authSource=admin
+
+  talos-gateway:
+    image: registry.gitlab.com/talos8645929/talos-service-plutus:latest
+    depends_on:
+      - plutus-service
+      - aphrodite-service
+    ports:
+      - "8300:8300"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: 8300
+      Talos__IncludeExceptionDetails: true
+
   #talos-interface:
   #  image: registry.gitlab.com/talos/talos-interface:main
   #  ports:
