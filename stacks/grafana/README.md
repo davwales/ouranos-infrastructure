@@ -1,0 +1,1 @@
+The contents of this stack were influenced heavily by https://github.com/grafana/loki/tree/main/examples/getting-started.
