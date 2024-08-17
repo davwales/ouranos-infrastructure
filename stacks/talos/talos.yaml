@@ -43,7 +43,7 @@ services:
       MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27017/plutus?authSource=admin
 
   talos-gateway:
-    image: registry.gitlab.com/talos8645929/talos-service-plutus:latest
+    image: registry.gitlab.com/talos8645929/talos-gateway:latest
     depends_on:
       - plutus-service
       - aphrodite-service
