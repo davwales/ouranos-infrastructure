@@ -16,8 +16,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
 
   aphrodite-service:
-    container_name: aphrodite
-    image: registry.gitlab.com/talos8645929/talos-service-aphrodite:latest
+    container_name: aphrodite-service
+    image: registry.gitlab.com/talos8645929/talos-olympus/aphrodite-service:latest
     depends_on:
       - db-talos
     ports:
@@ -30,8 +30,8 @@ services:
       TALOS_ML_URL: ${TALOS_ML_URL}
 
   plutus-service:
-    container_name: plutus
-    image: registry.gitlab.com/talos8645929/talos-service-plutus:latest
+    container_name: plutus-service
+    image: registry.gitlab.com/talos8645929/talos-olympus/plutus-service:latest
     depends_on:
       - db-talos
     ports:
@@ -43,7 +43,8 @@ services:
       MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-talos:27017/plutus?authSource=admin
 
   talos-gateway:
-    image: registry.gitlab.com/talos8645929/talos-gateway:latest
+    container_name: talos-gateway
+    image: registry.gitlab.com/talos8645929/talos-olympus/gateway:latest
     depends_on:
       - plutus-service
       - aphrodite-service
