@@ -17,7 +17,7 @@ services:
 
   hermes-service:
     container_name: hermes-service
-    image: registry.gitlab.com/ouranos8645929/ouranos-olympus/hermes-service:latest
+    image: registry.gitlab.com/talos8645929/ouranos-pantheon/hermes-service:latest
     depends_on:
       - db-ouranos
     ports:
@@ -31,7 +31,7 @@ services:
 
   plutus-service:
     container_name: plutus-service
-    image: registry.gitlab.com/ouranos8645929/ouranos-olympus/plutus-service:latest
+    image: registry.gitlab.com/talos8645929/ouranos-pantheon/plutus-service:latest
     depends_on:
       - db-ouranos
     ports:
@@ -44,7 +44,7 @@ services:
 
   ouranos-gateway:
     container_name: ouranos-gateway
-    image: registry.gitlab.com/ouranos8645929/ouranos-olympus/gateway:latest
+    image: registry.gitlab.com/talos8645929/ouranos-pantheon/gateway:latest
     depends_on:
       - plutus-service
       - hermes-service
