@@ -1,0 +1,65 @@
+services:
+  db-ouranos:
+    container_name: db-ouranos
+    build:
+      context: ./mongodb
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "27018:27017"
+    privileged: true
+    volumes:
+      - db-ouranos-data-cni:/etc/cni
+      - db-ouranos-data-containers:/var/lib/containers
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+
+  hermes-service:
+    container_name: hermes-service
+    image: registry.gitlab.com/ouranos8645929/ouranos-olympus/hermes-service:latest
+    depends_on:
+      - db-ouranos
+    ports:
+      - "8301:8301"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: 8301
+      Ouranos__IncludeExceptionDetails: true
+      MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017/hermes?authSource=admin
+      OURANOS_ML_URL: ${OURANOS_ML_URL}
+
+  plutus-service:
+    container_name: plutus-service
+    image: registry.gitlab.com/ouranos8645929/ouranos-olympus/plutus-service:latest
+    depends_on:
+      - db-ouranos
+    ports:
+      - "8302:8302"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: 8302
+      Ouranos__IncludeExceptionDetails: true
+      MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017/plutus?authSource=admin
+
+  ouranos-gateway:
+    container_name: ouranos-gateway
+    image: registry.gitlab.com/ouranos8645929/ouranos-olympus/gateway:latest
+    depends_on:
+      - plutus-service
+      - hermes-service
+    ports:
+      - "8300:8300"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: 8300
+      Ouranos__IncludeExceptionDetails: true
+
+  #ouranos-interface:
+  #  image: registry.gitlab.com/ouranos/ouranos-interface:main
+  #  ports:
+  #    - "8080:80"
+
+volumes:
+  db-ouranos-data-cni:
+  db-ouranos-data-containers:
