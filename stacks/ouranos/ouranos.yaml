@@ -9,8 +9,8 @@ services:
       - "27018:27017"
     privileged: true
     volumes:
-      - db-ouranos-data-cni:/etc/cni
-      - db-ouranos-data-containers:/var/lib/containers
+      - db-talos-data-cni:/etc/cni
+      - db-talos-data-containers:/var/lib/containers
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
