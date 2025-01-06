@@ -61,5 +61,5 @@ services:
   #    - "8080:80"
 
 volumes:
-  db-ouranos-data-cni:
-  db-ouranos-data-containers:
+  db-talos-data-cni:
+  db-talos-data-containers:
