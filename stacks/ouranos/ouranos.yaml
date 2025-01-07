@@ -15,48 +15,20 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
 
-  hermes-service:
-    container_name: hermes-service
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/hermes-service:latest
-    depends_on:
-      - db-ouranos
-    ports:
-      - "8301:8301"
-    environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      ASPNETCORE_HTTP_PORTS: 8301
-      Ouranos__IncludeExceptionDetails: true
-      MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017/hermes?authSource=admin
-      OURANOS_ML_URL: ${OURANOS_ML_URL}
-
-  plutus-service:
-    container_name: plutus-service
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/plutus-service:latest
-    depends_on:
-      - db-ouranos
-    ports:
-      - "8302:8302"
-    environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      ASPNETCORE_HTTP_PORTS: 8302
-      Ouranos__IncludeExceptionDetails: true
-      MONGO_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017/plutus?authSource=admin
-
-  ouranos-gateway:
-    container_name: ouranos-gateway
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/gateway:latest
-    depends_on:
-      - plutus-service
-      - hermes-service
+  pantheon-gateway:
+    container_name: pantheon-gateway
+    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-gateway:latest
     ports:
       - "8300:8300"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: 8300
       Ouranos__IncludeExceptionDetails: true
+      Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017?authSource=admin
+      Hermes__OuranosMl__ConectionString: ${OURANOS_ML_URL}
 
-  #ouranos-interface:
-  #  image: registry.gitlab.com/ouranos/ouranos-interface:main
+  #pantheon-interface:
+  #  image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-interface:latest
   #  ports:
   #    - "8080:80"
 
