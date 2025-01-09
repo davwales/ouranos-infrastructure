@@ -24,8 +24,9 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: 8300
       Ouranos__IncludeExceptionDetails: true
-      Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017?authSource=admin
-      Hermes__OuranosMl__ConnectionString: ${OURANOS_ML_URL}
+      Ouranos__RequestTimeout: 180
+      Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017?authSource=admin
+      Ouranos__OuranosMl__ConnectionString: ${OURANOS_ML_URL}
 
   #pantheon-interface:
   #  image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-interface:latest
