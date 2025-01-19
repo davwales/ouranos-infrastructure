@@ -37,6 +37,7 @@ services:
       Ouranos__RequestTimeout: 180
       Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017?authSource=admin
       Ouranos__OuranosMl__ConnectionString: ${OURANOS_ML_URL}
+      Ouranos__Hermes__SystemPrompt: ${HERMES_SYSTEM_PROMPT}
   
   pantheon-plutus-data-loader-consumer:
     container_name: pantheon-plutus-data-loader-consumer
@@ -59,6 +60,7 @@ services:
     environment:
       Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
       Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
+      Ouranos__OsrsWiki__UserAgent: ${OSRS_WIKI_USER_AGENT}
 
   # Enable after Legacy Talos app is shutdown.
   # pantheon-plutus-data-loader-stocks:
