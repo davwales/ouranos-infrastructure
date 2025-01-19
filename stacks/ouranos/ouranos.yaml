@@ -49,24 +49,26 @@ services:
       Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
       Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
 
-  pantheon-plutus-data-loader-ffxiv:
-    container_name: pantheon-plutus-data-loader-ffxiv
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-ffxiv:latest
-    environment:
-      DOTNET_ENVIRONMENT: Production
-      Ouranos__RabbitMq__Host: messaging-ouranos
-      Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
-      Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
+  # Enable after Legacy Talos app is shutdown.
+  # pantheon-plutus-data-loader-ffxiv:
+  #   container_name: pantheon-plutus-data-loader-ffxiv
+  #   image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-ffxiv:latest
+  #   environment:
+  #     DOTNET_ENVIRONMENT: Production
+  #     Ouranos__RabbitMq__Host: messaging-ouranos
+  #     Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
+  #     Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
 
-  pantheon-plutus-data-loader-osrs:
-    container_name: pantheon-plutus-data-loader-osrs
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-osrs:latest
-    environment:
-      DOTNET_ENVIRONMENT: Production
-      Ouranos__RabbitMq__Host: messaging-ouranos
-      Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
-      Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
-      Ouranos__OsrsWiki__UserAgent: ${OSRS_WIKI_USER_AGENT}
+  # Enable after Legacy Talos app is shutdown.
+  # pantheon-plutus-data-loader-osrs:
+  #   container_name: pantheon-plutus-data-loader-osrs
+  #   image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-osrs:latest
+  #   environment:
+  #     DOTNET_ENVIRONMENT: Production
+  #     Ouranos__RabbitMq__Host: messaging-ouranos
+  #     Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
+  #     Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
+  #     Ouranos__OsrsWiki__UserAgent: ${OSRS_WIKI_USER_AGENT}
 
   # Enable after Legacy Talos app is shutdown.
   # pantheon-plutus-data-loader-stocks:
