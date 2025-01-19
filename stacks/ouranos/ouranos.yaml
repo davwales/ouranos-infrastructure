@@ -54,6 +54,7 @@ services:
     image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-ffxiv:latest
     environment:
       DOTNET_ENVIRONMENT: Production
+      Ouranos__RabbitMq__Host: messaging-ouranos
       Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
       Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
 
