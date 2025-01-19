@@ -37,7 +37,40 @@ services:
       Ouranos__RequestTimeout: 180
       Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017?authSource=admin
       Ouranos__OuranosMl__ConnectionString: ${OURANOS_ML_URL}
+  
+  pantheon-plutus-data-loader-consumer:
+    container_name: pantheon-plutus-data-loader-consumer
+    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-consumer:latest
+    environment:
+      Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017?authSource=admin
+      Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
+      Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
 
+  pantheon-plutus-data-loader-ffxiv:
+    container_name: pantheon-plutus-data-loader-ffxiv
+    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-ffxiv:latest
+    environment:
+      Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
+      Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
+
+  pantheon-plutus-data-loader-osrs:
+    container_name: pantheon-plutus-data-loader-osrs
+    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-osrs:latest
+    environment:
+      Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
+      Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
+
+  # Enable after Legacy Talos app is shutdown.
+  # pantheon-plutus-data-loader-stocks:
+  #   container_name: pantheon-plutus-data-loader-stocks
+  #   image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-stocks:latest
+  #   environment:
+  #     Ouranos__Alpaca__ApiKey: ${ALPACA_API_KEY}
+  #     Ouranos__Alpaca__ApiSecret: ${ALPACA_API_SECRET}
+  #     Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
+  #     Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
+
+  # Enable when interface is ready.
   #pantheon-interface:
   #  image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-interface:latest
   #  ports:
