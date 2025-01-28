@@ -28,6 +28,12 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_logs:/var/log/rabbitmq
+    command: >
+      sh -c "rabbitmq-plugins enable rabbitmq_shovel rabbitmq_shovel_management &&
+             rabbitmq-server"
 
   pantheon-gateway:
     <<: *service-policy
@@ -100,3 +106,5 @@ services:
 volumes:
   db-talos-data-cni:
   db-talos-data-containers:
+  rabbitmq_data:
+  rabbitmq_logs:
