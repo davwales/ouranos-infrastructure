@@ -8,7 +8,6 @@ services:
     build:
       context: ./mongodb
       dockerfile: Dockerfile
-    restart: always
     ports:
       - "27018:27017"
     privileged: true
