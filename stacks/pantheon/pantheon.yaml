@@ -2,7 +2,7 @@ x-service-policy: &service-policy
   restart: always
 
 services:
-  db-ouranos:
+  pantheon-db:
     <<: *service-policy
     build:
       context: ./mongodb
@@ -11,13 +11,13 @@ services:
       - "27018:27017"
     privileged: true
     volumes:
-      - db-ouranos-data-cni:/etc/cni
-      - db-ouranos-data-containers:/var/lib/containers
+      - pantheon-db-data-cni:/etc/cni
+      - pantheon-db-data-containers:/var/lib/containers
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
 
-  messaging-ouranos:
+  pantheon-messaging:
     <<: *service-policy
     image: rabbitmq:3-management-alpine
     ports:
@@ -43,7 +43,7 @@ services:
       ASPNETCORE_HTTP_PORTS: 8300
       Ouranos__IncludeExceptionDetails: true
       Ouranos__RequestTimeout: 180
-      Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017?authSource=admin
+      Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@pantheon-db:27017?authSource=admin
       Ouranos__OuranosMl__ConnectionString: ${OURANOS_ML_URL}
       Ouranos__Hermes__SystemPrompt: ${HERMES_SYSTEM_PROMPT}
   
@@ -52,8 +52,8 @@ services:
     image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-consumer:latest
     environment:
       DOTNET_ENVIRONMENT: Production
-      Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db-ouranos:27017?authSource=admin
-      Ouranos__RabbitMq__Host: messaging-ouranos
+      Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@pantheon-db:27017?authSource=admin
+      Ouranos__RabbitMq__Host: pantheon-messaging
       Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
       Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
 
@@ -62,7 +62,7 @@ services:
     image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-ffxiv:latest
     environment:
       DOTNET_ENVIRONMENT: Production
-      Ouranos__RabbitMq__Host: messaging-ouranos
+      Ouranos__RabbitMq__Host: pantheon-messaging
       Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
       Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
 
@@ -71,7 +71,7 @@ services:
     image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-osrs:latest
     environment:
       DOTNET_ENVIRONMENT: Production
-      Ouranos__RabbitMq__Host: messaging-ouranos
+      Ouranos__RabbitMq__Host: pantheon-messaging
       Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
       Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
       Ouranos__OsrsWiki__UserAgent: ${OSRS_WIKI_USER_AGENT}
@@ -83,7 +83,7 @@ services:
       DOTNET_ENVIRONMENT: Production
       Ouranos__Alpaca__ApiKey: ${ALPACA_API_KEY}
       Ouranos__Alpaca__ApiSecret: ${ALPACA_API_SECRET}
-      Ouranos__RabbitMq__Host: messaging-ouranos
+      Ouranos__RabbitMq__Host: pantheon-messaging
       Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
       Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
 
@@ -94,7 +94,7 @@ services:
       - "8080:80"
 
 volumes:
-  db-ouranos-data-cni:
-  db-ouranos-data-containers:
+  pantheon-db-data-cni:
+  pantheon-db-data-containers:
   rabbitmq_data:
   rabbitmq_logs:
