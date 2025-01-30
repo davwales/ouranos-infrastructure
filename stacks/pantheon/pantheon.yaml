@@ -91,7 +91,7 @@ services:
     <<: *service-policy
     image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-interface:latest
     ports:
-      - "8080:80"
+      - "80:3000"
 
 volumes:
   pantheon-db-data-cni:
