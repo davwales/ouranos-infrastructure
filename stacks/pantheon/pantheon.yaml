@@ -45,7 +45,7 @@ services:
       Ouranos__RequestTimeout: 180
       Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@pantheon-db:27017?authSource=admin
       Ouranos__OuranosMl__ConnectionString: ${OURANOS_ML_URL}
-      Ouranos__Hermes__SystemPrompt: ${HERMES_SYSTEM_PROMPT}
+      Ouranos__Hermes__OuranosMl__SystemPrompt: ${HERMES_SYSTEM_PROMPT}
   
   pantheon-plutus-data-loader-consumer:
     <<: *service-policy
