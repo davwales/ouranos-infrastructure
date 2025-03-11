@@ -20,6 +20,7 @@ services:
   pantheon-messaging:
     <<: *service-policy
     image: rabbitmq:3-management-alpine
+    hostname: pantheon-messaging
     ports:
       - "5672:5672"
       - "15672:15672"
