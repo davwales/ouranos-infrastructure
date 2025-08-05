@@ -17,6 +17,18 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
 
+  pantheon-psql-db:
+    <<: *service-policy
+    image: timescale/timescaledb:latest-pg17
+    environment:
+      POSTGRES_DB: pantheon
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pantheon-psql-db:/var/lib/postgresql/data
+
   pantheon-messaging:
     <<: *service-policy
     image: rabbitmq:3-management-alpine
@@ -47,7 +59,7 @@ services:
       Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@pantheon-db:27017?authSource=admin
       Ouranos__OuranosMl__ConnectionString: ${OURANOS_ML_URL}
       Ouranos__Hermes__OuranosMl__SystemPrompt: ${HERMES_SYSTEM_PROMPT}
-  
+
   pantheon-plutus-data-loader-consumer:
     <<: *service-policy
     image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-consumer:latest
@@ -99,3 +111,4 @@ volumes:
   pantheon-db-data-containers:
   rabbitmq_data:
   rabbitmq_logs:
+  pantheon-psql-db:
