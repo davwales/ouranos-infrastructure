@@ -1,5 +1,4 @@
 include:
   - path: "stacks/pantheon/pantheon.yaml"
-  - path: "stacks/grafana/grafana.yaml"
   - path: "stacks/forejo/forejo.yaml"
   - path: "stacks/infrastructure/infrastructure.yaml"
