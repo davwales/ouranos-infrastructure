@@ -24,4 +24,4 @@ services:
     command: '/bin/sh -c "while : ; do sleep 1 ; done ;"'
 
 volumes:
-  - forejo_data
+  forejo_data:
