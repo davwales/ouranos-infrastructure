@@ -19,6 +19,7 @@ services:
     user: 1000:1000
     volumes:
       - forgejo_data:/data
+      - ./config.yml:/data/config.yml
     restart: "unless-stopped"
 
     command: '/bin/sh -c "sleep 5; forgejo-runner daemon --config config.yml"'
