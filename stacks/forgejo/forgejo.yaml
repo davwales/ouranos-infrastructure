@@ -16,7 +16,7 @@ services:
         condition: service_started
     environment:
       DOCKER_HOST: tcp://forgejo-dind:2375
-    user: 1001:1001
+    user: 1000:1000
     volumes:
       - forgejo_data:/data
     restart: "unless-stopped"
