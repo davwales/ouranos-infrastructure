@@ -33,7 +33,7 @@ container:
   options:
   workdir_parent:
   valid_volumes: []
-  docker_host: "tcp://127.0.0.1:2376"
+  docker_host: "tcp://forgejo-dind:2375"
   force_pull: false
   force_rebuild: false
 
