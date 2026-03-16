@@ -31,7 +31,6 @@ container:
   options:
   workdir_parent:
   valid_volumes: []
-~ $ cat config.yml
 
 log:
   level: info
