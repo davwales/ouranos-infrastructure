@@ -48,7 +48,7 @@ services:
 
   pantheon-gateway:
     <<: *service-policy
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-gateway:latest
+    image: codeberg.org/ouranos-labs/pantheon-gateway:latest
     ports:
       - "8300:8300"
     environment:
@@ -65,7 +65,7 @@ services:
 
   pantheon-plutus-data-loader-consumer:
     <<: *service-policy
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-consumer:latest
+    image: codeberg.org/ouranos-labs/pantheon-plutus-data-loader-consumer:latest
     environment:
       DOTNET_ENVIRONMENT: Production
       Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@pantheon-db:27017?authSource=admin
@@ -78,7 +78,7 @@ services:
 
   pantheon-plutus-data-loader-ffxiv:
     <<: *service-policy
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-ffxiv:latest
+    image: codeberg.org/ouranos-labs/pantheon-plutus-data-loader-ffxiv:latest
     environment:
       DOTNET_ENVIRONMENT: Production
       Ouranos__RabbitMq__Host: pantheon-messaging
@@ -87,7 +87,7 @@ services:
 
   pantheon-plutus-data-loader-osrs:
     <<: *service-policy
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-osrs:latest
+    image: codeberg.org/ouranos-labs/pantheon-plutus-data-loader-osrs:latest
     environment:
       DOTNET_ENVIRONMENT: Production
       Ouranos__RabbitMq__Host: pantheon-messaging
@@ -97,7 +97,7 @@ services:
 
   pantheon-plutus-data-loader-stocks:
     <<: *service-policy
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-stocks:latest
+    image: codeberg.org/ouranos-labs/pantheon-plutus-data-loader-stocks:latest
     environment:
       DOTNET_ENVIRONMENT: Production
       Ouranos__Alpaca__ApiKey: ${ALPACA_API_KEY}
@@ -108,7 +108,7 @@ services:
 
   pantheon-interface:
     <<: *service-policy
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-interface:latest
+    image: codeberg.org/ouranos-labs/pantheon-interface:latest
     ports:
       - "80:3000"
 
