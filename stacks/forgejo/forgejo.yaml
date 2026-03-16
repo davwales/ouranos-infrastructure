@@ -1,24 +1,27 @@
 # See https://forgejo.org/docs/next/admin/actions/runner-installation for setup instructions.
 
 services:
-  forejo-dind:
+  forgejo-dind:
     image: docker:dind
     privileged: "true"
     command: ["dockerd", "-H", "tcp://0.0.0.0:2375", "--tls=false"]
     restart: "unless-stopped"
 
-  forejo-runner:
+  forgejo-runner:
     image: "data.forgejo.org/forgejo/runner:11"
     links:
-      - forejo-dind
+      - forgejo-dind
     depends_on:
-      forejo-dind:
+      forgejo-dind:
         condition: service_started
     environment:
-      DOCKER_HOST: tcp://forejo-dind:2375
+      DOCKER_HOST: tcp://forgejo-dind:2375
     user: 1001:1001
     volumes:
-      - ~/.local/share/forejo-runner:/data
+      - forgejo_data:/data
     restart: "unless-stopped"
 
     command: '/bin/sh -c "while : ; do sleep 1 ; done ;"'
+
+volumes:
+  forgejo_data:
