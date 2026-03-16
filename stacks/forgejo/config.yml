@@ -25,41 +25,6 @@ cache:
   actions_cache_url_override: ""
 
 container:
-  network: ""
-  enable_ipv6: false
-  privileged: false
-  options:
-  workdir_parent:
-  valid_volumes: []
-~ $ cat config.yml
-
-log:
-  level: info
-  job_level: info
-
-runner:
-  file: .runner
-  capacity: 1
-  env_file: .env
-  timeout: 3h
-  shutdown_timeout: 3h
-  insecure: false
-  fetch_timeout: 5s
-  fetch_interval: 2s
-  report_interval: 1s
-  labels: []
-
-cache:
-  enabled: true
-  port: 0
-  dir: ""
-  external_server: ""
-  secret: ""
-  host: ""
-  proxy_port: 0
-  actions_cache_url_override: ""
-
-container:
   network: "host"
   enable_ipv6: false
   privileged: true
