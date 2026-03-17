@@ -56,55 +56,17 @@ services:
       ASPNETCORE_HTTP_PORTS: 8300
       Ouranos__IncludeExceptionDetails: true
       Ouranos__RequestTimeout: 180
-      Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@pantheon-db:27017?authSource=admin
       Ouranos__Postgres__Host: pantheon-psql-db
       Ouranos__Postgres__Username: ${POSTGRES_USER}
       Ouranos__Postgres__Password: ${POSTGRES_PASSWORD}
       Ouranos__OuranosMl__ConnectionString: ${OURANOS_ML_URL}
       Ouranos__Hermes__OuranosMl__SystemPrompt: ${HERMES_SYSTEM_PROMPT}
-
-  pantheon-plutus-data-loader-consumer:
-    <<: *service-policy
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-consumer:latest
-    environment:
-      DOTNET_ENVIRONMENT: Production
-      Ouranos__Mongo__ConnectionString: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@pantheon-db:27017?authSource=admin
-      Ouranos__Postgres__Host: pantheon-psql-db
-      Ouranos__Postgres__Username: ${POSTGRES_USER}
-      Ouranos__Postgres__Password: ${POSTGRES_PASSWORD}
-      Ouranos__RabbitMq__Host: pantheon-messaging
-      Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
-      Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
-
-  pantheon-plutus-data-loader-ffxiv:
-    <<: *service-policy
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-ffxiv:latest
-    environment:
-      DOTNET_ENVIRONMENT: Production
-      Ouranos__RabbitMq__Host: pantheon-messaging
-      Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
-      Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
-
-  pantheon-plutus-data-loader-osrs:
-    <<: *service-policy
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-osrs:latest
-    environment:
-      DOTNET_ENVIRONMENT: Production
-      Ouranos__RabbitMq__Host: pantheon-messaging
-      Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
-      Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
-      Ouranos__OsrsWiki__UserAgent: ${OSRS_WIKI_USER_AGENT}
-
-  pantheon-plutus-data-loader-stocks:
-    <<: *service-policy
-    image: registry.gitlab.com/talos8645929/ouranos-pantheon/pantheon-plutus-data-loader-stocks:latest
-    environment:
-      DOTNET_ENVIRONMENT: Production
-      Ouranos__Alpaca__ApiKey: ${ALPACA_API_KEY}
-      Ouranos__Alpaca__ApiSecret: ${ALPACA_API_SECRET}
-      Ouranos__RabbitMq__Host: pantheon-messaging
-      Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
-      Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
+      Ouranos__Plutus__DataLoaders__RabbitMq__Host: pantheon-messaging
+      Ouranos__Plutus__DataLoaders__RabbitMq__Username: ${RABBITMQ_USERNAME}
+      Ouranos__Plutus__DataLoaders__RabbitMq__Password: ${RABBITMQ_PASSWORD}
+      Ouranos__Plutus__DataLoaders__Osrs__Wiki__UserAgent: ${OSRS_WIKI_USER_AGENT}
+      Ouranos__Plutus__DataLoaders__Stocks__ApiKey: ${ALPACA_API_KEY}
+      Ouranos__Plutus__DataLoaders__Stocks__ApiSecret: ${ALPACA_API_SECRET}
 
   pantheon-interface:
     <<: *service-policy
