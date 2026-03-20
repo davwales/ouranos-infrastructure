@@ -59,11 +59,11 @@ services:
       Ouranos__Postgres__Host: pantheon-psql-db
       Ouranos__Postgres__Username: ${POSTGRES_USER}
       Ouranos__Postgres__Password: ${POSTGRES_PASSWORD}
+      Ouranos__RabbitMq__Host: pantheon-messaging
+      Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
+      Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
       Ouranos__OuranosMl__ConnectionString: ${OURANOS_ML_URL}
       Ouranos__Hermes__OuranosMl__SystemPrompt: ${HERMES_SYSTEM_PROMPT}
-      Ouranos__Plutus__DataLoaders__RabbitMq__Host: pantheon-messaging
-      Ouranos__Plutus__DataLoaders__RabbitMq__Username: ${RABBITMQ_USERNAME}
-      Ouranos__Plutus__DataLoaders__RabbitMq__Password: ${RABBITMQ_PASSWORD}
       Ouranos__Plutus__DataLoaders__Osrs__Wiki__UserAgent: ${OSRS_WIKI_USER_AGENT}
       Ouranos__Plutus__DataLoaders__Stocks__ApiKey: ${ALPACA_API_KEY}
       Ouranos__Plutus__DataLoaders__Stocks__ApiSecret: ${ALPACA_API_SECRET}
