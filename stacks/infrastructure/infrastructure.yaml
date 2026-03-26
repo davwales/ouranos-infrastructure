@@ -46,4 +46,3 @@ volumes:
   rabbitmq_data:
   rabbitmq_logs:
   postgres_data:
-    name: ouranos_pantheon-psql-db
