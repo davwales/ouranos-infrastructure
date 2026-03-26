@@ -19,6 +19,8 @@ services:
       Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
       Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
       Ouranos__OuranosMl__ConnectionString: ${OURANOS_ML_URL}
+      Ouranos__Flagsmith__ApiUrl: http://flagsmith:8001/api/v1/
+      Ouranos__Flagsmith__EnvironmentKey: ${FLAGSMITH_ENV_KEY}
       Ouranos__Plutus__DataLoaders__Osrs__Wiki__UserAgent: ${OSRS_WIKI_USER_AGENT}
       Ouranos__Plutus__DataLoaders__Stocks__ApiKey: ${ALPACA_API_KEY}
       Ouranos__Plutus__DataLoaders__Stocks__ApiSecret: ${ALPACA_API_SECRET}
