@@ -1,7 +1,25 @@
 include:
   - grafana/grafana.yaml
+  - postgres/postgres.yaml
 
 services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: pantheon-messaging
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_logs:/var/log/rabbitmq
+    command: >
+      sh -c "rabbitmq-plugins enable rabbitmq_shovel rabbitmq_shovel_management &&
+             rabbitmq-server"
+    restart: always
+
   valkey:
     image: valkey/valkey:9.0.3
     ports:
@@ -11,5 +29,21 @@ services:
     command: ["valkey-server", "--save", "60", "1", "--loglevel", "warning"]
     restart: always
 
+  flagsmith:
+    image: flagsmith/flagsmith:latest
+    environment:
+      DJANGO_ALLOWED_HOSTS: "*"
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/flagsmith
+      ENV: prod
+    ports:
+      - 8001:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   valkey_data:
+  rabbitmq_data:
+  rabbitmq_logs:
+  postgres_data:
+    name: ouranos_pantheon-psql-db

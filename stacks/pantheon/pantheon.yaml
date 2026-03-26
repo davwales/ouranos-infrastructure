@@ -2,50 +2,6 @@ x-service-policy: &service-policy
   restart: always
 
 services:
-  pantheon-db:
-    <<: *service-policy
-    build:
-      context: ./mongodb
-      dockerfile: Dockerfile
-    ports:
-      - "27018:27017"
-    privileged: true
-    volumes:
-      - pantheon-db-data-cni:/etc/cni
-      - pantheon-db-data-containers:/var/lib/containers
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
-
-  pantheon-psql-db:
-    <<: *service-policy
-    image: timescale/timescaledb:latest-pg17
-    environment:
-      POSTGRES_DB: pantheon
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
-    volumes:
-      - pantheon-psql-db:/var/lib/postgresql/data
-
-  pantheon-messaging:
-    <<: *service-policy
-    image: rabbitmq:3-management-alpine
-    hostname: pantheon-messaging
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-      - rabbitmq_logs:/var/log/rabbitmq
-    command: >
-      sh -c "rabbitmq-plugins enable rabbitmq_shovel rabbitmq_shovel_management &&
-             rabbitmq-server"
-
   pantheon-gateway:
     <<: *service-policy
     image: codeberg.org/ouranos-labs/pantheon-gateway:latest
@@ -56,14 +12,13 @@ services:
       ASPNETCORE_HTTP_PORTS: 8300
       Ouranos__IncludeExceptionDetails: true
       Ouranos__RequestTimeout: 180
-      Ouranos__Postgres__Host: pantheon-psql-db
+      Ouranos__Postgres__Host: postgres
       Ouranos__Postgres__Username: ${POSTGRES_USER}
       Ouranos__Postgres__Password: ${POSTGRES_PASSWORD}
-      Ouranos__RabbitMq__Host: pantheon-messaging
+      Ouranos__RabbitMq__Host: rabbitmq
       Ouranos__RabbitMq__Username: ${RABBITMQ_USERNAME}
       Ouranos__RabbitMq__Password: ${RABBITMQ_PASSWORD}
       Ouranos__OuranosMl__ConnectionString: ${OURANOS_ML_URL}
-      Ouranos__Hermes__OuranosMl__SystemPrompt: ${HERMES_SYSTEM_PROMPT}
       Ouranos__Plutus__DataLoaders__Osrs__Wiki__UserAgent: ${OSRS_WIKI_USER_AGENT}
       Ouranos__Plutus__DataLoaders__Stocks__ApiKey: ${ALPACA_API_KEY}
       Ouranos__Plutus__DataLoaders__Stocks__ApiSecret: ${ALPACA_API_SECRET}
@@ -73,10 +28,3 @@ services:
     image: codeberg.org/ouranos-labs/pantheon-interface:latest
     ports:
       - "80:3000"
-
-volumes:
-  pantheon-db-data-cni:
-  pantheon-db-data-containers:
-  rabbitmq_data:
-  rabbitmq_logs:
-  pantheon-psql-db:
