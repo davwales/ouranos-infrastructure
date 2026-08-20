@@ -1,11 +1,3 @@
-# GitHub Actions self-hosted runner.
-# Image: https://github.com/myoung34/github-runner (pinned to 2.336.0-ubuntu-jammy)
-# Docs:  https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-github-actions
-#
-# Registration: set RUNNER_TOKEN (short-lived, from repo Settings > Actions > Runners)
-# OR ACCESS_TOKEN (fine-grained PAT with "Administration: Read & write" on the repo)
-# for restart-resilient auto-registration. Put real values in .env (gitignored).
-
 x-service-policy: &service-policy
   restart: unless-stopped
 

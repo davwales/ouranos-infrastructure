@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: timescale/timescaledb:latest-pg17
+    image: timescale/timescaledb:2.21.1-pg17
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -16,7 +16,7 @@ services:
     restart: always
 
   db-init:
-    image: timescale/timescaledb:latest-pg17
+    image: timescale/timescaledb:2.21.1-pg17
     environment:
       PGUSER: ${POSTGRES_USER}
       PGPASSWORD: ${POSTGRES_PASSWORD}
