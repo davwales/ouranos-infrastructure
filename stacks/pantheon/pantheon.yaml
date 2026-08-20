@@ -4,7 +4,7 @@ x-service-policy: &service-policy
 services:
   pantheon-gateway:
     <<: *service-policy
-    image: codeberg.org/ouranos-labs/pantheon-gateway:latest
+    image: ghcr.io/davwales/ouranos-pantheon/gateway:latest
     ports:
       - "8300:8300"
     environment:
@@ -28,6 +28,6 @@ services:
 
   pantheon-interface:
     <<: *service-policy
-    image: codeberg.org/ouranos-labs/pantheon-interface:latest
+    image: ghcr.io/davwales/ouranos-pantheon/interface:latest
     ports:
       - "80:3000"

@@ -1,4 +1,4 @@
 include:
   - path: "stacks/pantheon/pantheon.yaml"
-  - path: "stacks/forgejo/forgejo.yaml"
+  - path: "stacks/runner/runner.yaml"
   - path: "stacks/infrastructure/infrastructure.yaml"
