@@ -41,8 +41,35 @@ services:
     command:  run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     ports:
       - 12345:12345
+      - "4317:4317"
+      - "4318:4318"
     depends_on:
       - loki-gateway
+      - tempo
+      - mimir
+
+  tempo:
+    image: grafana/tempo:3.0.3
+    command: ["-config.file=/etc/tempo.yaml"]
+    user: root
+    restart: always
+    volumes:
+      - ./tempo-config.yaml:/etc/tempo.yaml
+      - ./.data/tempo:/var/tempo
+    ports:
+      - "3200:3200"
+      - "4317"
+      - "4318"
+
+  mimir:
+    image: grafana/mimir:3.2.0
+    command: ["--config.file=/etc/mimir/mimir.yaml"]
+    restart: always
+    volumes:
+      - ./mimir-config.yaml:/etc/mimir/mimir.yaml
+      - ./.data/mimir:/data
+    ports:
+      - "9009:9009"
 
   minio:
     image: minio/minio
@@ -86,12 +113,33 @@ services:
         datasources:
           - name: Loki
             type: loki
+            uid: loki
             access: proxy
             url: http://loki-gateway:3100
             jsonData:
               httpHeaderName1: "X-Scope-OrgID"
+              derivedFields:
+                - name: TraceID
+                  matcherRegex: '"TraceId":"([0-9a-f]{32})"'
+                  datasourceUid: tempo
+                  url: '\$${__value.raw}'
             secureJsonData:
               httpHeaderValue1: "tenant1"
+          - name: Tempo
+            type: tempo
+            uid: tempo
+            access: proxy
+            url: http://tempo:3200
+            jsonData:
+              tracesToLogsV2:
+                datasourceUid: loki
+                filterByTraceID: true
+                filterBySpanID: false
+          - name: Mimir
+            type: prometheus
+            uid: mimir
+            access: proxy
+            url: http://mimir:9009/prometheus
         EOF
         /run.sh
     ports:
