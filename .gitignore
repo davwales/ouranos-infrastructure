@@ -1,3 +1,2 @@
 .env
-config
-stacks/grafana/.data
+stacks/infrastructure/grafana/.data/
