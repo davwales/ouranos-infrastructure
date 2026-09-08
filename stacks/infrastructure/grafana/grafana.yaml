@@ -104,52 +104,16 @@ services:
       retries: 5
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.1.4
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     depends_on:
       - loki-gateway
-    entrypoint:
-      - sh
-      - -euc
-      - |
-        mkdir -p /etc/grafana/provisioning/datasources
-        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
-        apiVersion: 1
-        datasources:
-          - name: Loki
-            type: loki
-            uid: loki
-            access: proxy
-            url: http://loki-gateway:3100
-            jsonData:
-              httpHeaderName1: "X-Scope-OrgID"
-              derivedFields:
-                - name: TraceID
-                  matcherRegex: '"TraceId":"([0-9a-f]{32})"'
-                  datasourceUid: tempo
-                  url: '\$${__value.raw}'
-            secureJsonData:
-              httpHeaderValue1: "tenant1"
-          - name: Tempo
-            type: tempo
-            uid: tempo
-            access: proxy
-            url: http://tempo:3200
-            jsonData:
-              tracesToLogsV2:
-                datasourceUid: loki
-                filterByTraceID: true
-                filterBySpanID: false
-          - name: Mimir
-            type: prometheus
-            uid: mimir
-            access: proxy
-            url: http://mimir:9009/prometheus
-        EOF
-        /run.sh
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./provisioning/datasources:/etc/grafana/provisioning/datasources:ro
     ports:
       - "3000:3000"
     healthcheck:
@@ -246,3 +210,6 @@ services:
   flog:
     image: mingrammer/flog
     command: -f json -d 200ms -l
+
+volumes:
+  grafana_data:
