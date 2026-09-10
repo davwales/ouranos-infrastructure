@@ -33,6 +33,9 @@ ruler_storage:
   filesystem:
     dir: /data/rules
 
+limits:
+  compactor_blocks_retention_period: 14d
+
 server:
   http_listen_port: 9009
   log_level: error

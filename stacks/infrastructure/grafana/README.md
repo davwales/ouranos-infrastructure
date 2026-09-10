@@ -4,11 +4,11 @@ The contents of this stack were influenced heavily by https://github.com/grafana
 
 | Service | Purpose | Ports (host) |
 |---------|---------|--------------|
-| read / write / backend | Loki simple-scalable mode (S3 storage via MinIO) | 3101, 3102 |
+| read / write / backend | Loki simple-scalable mode (S3 storage via MinIO, 14d retention) | 3101, 3102 |
 | loki-gateway | Nginx routing pushes to the writer and queries to the reader | 3100 |
 | alloy | Collector: scrapes Docker container logs to Loki; receives OTLP traces/metrics (gRPC 4317 / HTTP 4318) and forwards traces to Tempo and metrics to Mimir | 12345, 4317, 4318 |
-| tempo | Trace store (single binary, local filesystem storage under `./.data/tempo`, default 14d block retention) | 3200 |
-| mimir | Metric store (single process, local filesystem storage under `./.data/mimir`, multi-tenancy disabled) | 9009 |
+| tempo | Trace store (single binary, local filesystem storage under `./.data/tempo`, 14d block retention) | 3200 |
+| mimir | Metric store (single process, local filesystem storage under `./.data/mimir`, multi-tenancy disabled, 14d retention) | 9009 |
 | grafana | Visualization; datasources provisioned from `provisioning/datasources/ds.yaml` (mounted read-only at startup): Loki (with a `TraceId` derived field linking into Tempo), Tempo (with traces-to-logs correlation back to Loki), and Mimir (`/prometheus` endpoint) | 3000 |
 | minio | S3-compatible object storage for Loki | 9000 |
 
@@ -20,6 +20,11 @@ push to `http://<host>:4317`.
 
 Notes:
 
+- All three telemetry stores keep data for 14 days. Loki retention runs in the
+  `backend` compactor (`limits_config.retention_period: 14d` +
+  `compactor.retention_enabled`), Mimir deletes old blocks on compaction
+  (`limits.compactor_blocks_retention_period: 14d`), and Tempo deletes expired
+  blocks (`compactor.compaction.block_retention: 336h`).
 - `tempo` runs as `user: root` because the image defaults to uid 10001, which
   cannot write to the root-owned bind-mounted `./.data/tempo` directory.
 - Grafana state (dashboards, users, alerting) lives in the `grafana_data` named
