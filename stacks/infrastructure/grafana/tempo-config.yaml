@@ -20,11 +20,5 @@ storage:
     local:
       path: /var/tempo/blocks
 
-compactor:
-  compaction:
-    # 336h = 14 days. Tempo uses Go duration format, which has no 'd' unit,
-    # so days must be written as hours here.
-    block_retention: 336h
-
 usage_report:
   reporting_enabled: false
