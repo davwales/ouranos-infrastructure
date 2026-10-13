@@ -4,13 +4,11 @@ The contents of this stack were influenced heavily by https://github.com/grafana
 
 | Service                | Purpose                                                                                                                                                                                                                                                           | Ports (host)      |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| read / write / backend | Loki simple-scalable mode (S3 storage via MinIO, 14d retention)                                                                                                                                                                                                   | 3101, 3102        |
-| loki-gateway           | Nginx routing pushes to the writer and queries to the reader                                                                                                                                                                                                      | 3100              |
+| loki                   | Log store (single binary, local filesystem storage under `./.data/loki`, 14d retention)                                                                                                                                                                           | 3100              |
 | alloy                  | Collector: scrapes Docker container logs to Loki; receives OTLP traces/metrics (gRPC 4317 / HTTP 4318) and forwards traces to Tempo and metrics to Mimir                                                                                                          | 12345, 4317, 4318 |
 | tempo                  | Trace store (single binary, local filesystem storage under `./.data/tempo`, 14d block retention)                                                                                                                                                                  | 3200              |
 | mimir                  | Metric store (single process, local filesystem storage under `./.data/mimir`, multi-tenancy disabled, 14d retention)                                                                                                                                              | 9009              |
 | grafana                | Visualization; datasources provisioned from `provisioning/datasources/ds.yaml` (mounted read-only at startup): Loki (with a `TraceId` derived field linking into Tempo), Tempo (with traces-to-logs correlation back to Loki), and Mimir (`/prometheus` endpoint) | 3000              |
-| minio                  | S3-compatible object storage for Loki                                                                                                                                                                                                                             | 9000              |
 
 ## Telemetry flow
 
@@ -20,8 +18,8 @@ push to `http://<host>:4317`.
 
 Notes:
 
-- All three telemetry stores keep data for 14 days. Loki retention runs in the
-  `backend` compactor (`limits_config.retention_period: 14d` +
+- All three telemetry stores keep data for 14 days. Loki retention runs in its
+  built-in compactor (`limits_config.retention_period: 14d` +
   `compactor.retention_enabled`), Mimir deletes old blocks on compaction
   (`limits.compactor_blocks_retention_period: 14d`). Tempo is left on its
   14-day default.
@@ -35,8 +33,10 @@ Notes:
 - Mimir ingests metrics via its native OTLP endpoint (`/otlp/v1/metrics`);
   the Loki tenant header (`tenant1`) is vestigial from the upstream example -
   Loki itself runs with `auth_enabled: false`.
-- MinIO is no longer published as a container image (Docker Hub and quay.io)
-  and its upstream repo is archived. `minio/minio` only starts on hosts that
-  still have it cached; a fresh host needs a replacement S3 store for Loki.
+- `loki` also runs as `user: root` for the same reason with `./.data/loki`.
+  It replaced the earlier simple-scalable setup (read/write/backend behind an
+  nginx gateway, storing to MinIO); hosts upgraded from that setup can delete
+  `./.data/minio`. The `loki-gateway` network alias on `loki` is kept until
+  ouranos-pantheon's Serilog sink is repointed to `loki:3100`.
 - The Tempo datasource expects log lines to carry Serilog's `TraceId` property
   (hex trace id); the Loki derived-field regex links matching lines to Tempo.

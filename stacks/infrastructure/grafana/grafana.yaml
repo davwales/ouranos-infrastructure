@@ -1,16 +1,17 @@
 services:
-  read:
+  loki:
     image: grafana/loki:3.1.0
-    command: "-config.file=/etc/loki/config.yaml -target=read"
+    command: "-config.file=/etc/loki/config.yaml -target=all"
+    user: root
     restart: always
     ports:
-      - 3101:3100
-      - 7946
-      - 9095
+      - "3100:3100"
     volumes:
       - ./loki-config.yaml:/etc/loki/config.yaml
-    depends_on:
-      - minio
+      - ./.data/loki:/loki
+    networks:
+      default:
+        aliases: [loki-gateway]
     healthcheck:
       test:
         [
@@ -20,28 +21,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  write:
-    image: grafana/loki:3.1.0
-    command: "-config.file=/etc/loki/config.yaml -target=write"
-    restart: always
-    ports:
-      - 3102:3100
-      - 7946
-      - 9095
-    volumes:
-      - ./loki-config.yaml:/etc/loki/config.yaml
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    depends_on:
-      - minio
 
   alloy:
     image: grafana/alloy:v1.20.1
@@ -55,7 +34,7 @@ services:
       - "4317:4317"
       - "4318:4318"
     depends_on:
-      - loki-gateway
+      - loki
       - tempo
       - mimir
 
@@ -82,33 +61,6 @@ services:
     ports:
       - "9009:9009"
 
-  minio:
-    # minio/minio is no longer published (Docker Hub and quay.io) and the
-    # upstream repo is archived; this only runs from a locally cached image.
-    image: minio/minio
-    restart: always
-    entrypoint:
-      - sh
-      - -euc
-      - |
-        mkdir -p /data/loki-data && \
-        mkdir -p /data/loki-ruler && \
-        minio server /data
-    environment:
-      - MINIO_ROOT_USER=loki
-      - MINIO_ROOT_PASSWORD=supersecret
-      - MINIO_PROMETHEUS_AUTH_TYPE=public
-      - MINIO_UPDATE=off
-    ports:
-      - 9000
-    volumes:
-      - ./.data/minio:/data
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 15s
-      timeout: 20s
-      retries: 5
-
   grafana:
     image: grafana/grafana:13.1.4
     restart: always
@@ -117,7 +69,7 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     depends_on:
-      - loki-gateway
+      - loki
     volumes:
       - grafana_data:/var/lib/grafana
       - ./provisioning/datasources:/etc/grafana/provisioning/datasources:ro
@@ -129,89 +81,6 @@ services:
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1",
         ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  backend:
-    image: grafana/loki:3.1.0
-    restart: always
-    volumes:
-      - ./loki-config.yaml:/etc/loki/config.yaml
-    ports:
-      - "3100"
-      - "7946"
-    command: "-config.file=/etc/loki/config.yaml -target=backend -legacy-read-mode=false"
-    depends_on:
-      - loki-gateway
-
-  loki-gateway:
-    image: nginx:1.30.5
-    container_name: loki-gateway
-    restart: always
-    depends_on:
-      - read
-      - write
-    entrypoint:
-      - sh
-      - -euc
-      - |
-        cat <<EOF > /etc/nginx/nginx.conf
-        user  nginx;
-        worker_processes  5;  ## Default: 1
-
-        events {
-          worker_connections   1000;
-        }
-
-        http {
-          resolver 127.0.0.11;
-
-          client_max_body_size 4M;
-
-          server {
-            listen             3100;
-
-            location = / {
-              return 200 'OK';
-              auth_basic off;
-            }
-
-            location = /api/prom/push {
-              proxy_pass       http://write:3100\$$request_uri;
-            }
-
-            location = /api/prom/tail {
-              proxy_pass       http://read:3100\$$request_uri;
-              proxy_set_header Upgrade \$$http_upgrade;
-              proxy_set_header Connection "upgrade";
-            }
-
-            location ~ /api/prom/.* {
-              proxy_pass       http://read:3100\$$request_uri;
-            }
-
-            location = /loki/api/v1/push {
-              proxy_pass       http://write:3100\$$request_uri;
-            }
-
-            location = /loki/api/v1/tail {
-              proxy_pass       http://read:3100\$$request_uri;
-              proxy_set_header Upgrade \$$http_upgrade;
-              proxy_set_header Connection "upgrade";
-            }
-
-            location ~ /loki/api/.* {
-              proxy_pass       http://read:3100\$$request_uri;
-            }
-          }
-        }
-        EOF
-        /docker-entrypoint.sh nginx -g "daemon off;"
-    ports:
-      - "3100:3100"
-    healthcheck:
-      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/3100' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
