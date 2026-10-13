@@ -1,10 +1,21 @@
 x-service-policy: &service-policy
   restart: always
+  labels:
+    com.centurylinklabs.watchtower.enable: "true"
 
 services:
   pantheon-gateway:
     <<: *service-policy
     image: ghcr.io/davwales/ouranos-pantheon/gateway:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_started
+      flagsmith:
+        condition: service_started
     ports:
       - "8300:8300"
     environment:

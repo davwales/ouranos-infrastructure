@@ -35,5 +35,8 @@ Notes:
 - Mimir ingests metrics via its native OTLP endpoint (`/otlp/v1/metrics`);
   the Loki tenant header (`tenant1`) is vestigial from the upstream example -
   Loki itself runs with `auth_enabled: false`.
+- MinIO is no longer published as a container image (Docker Hub and quay.io)
+  and its upstream repo is archived. `minio/minio` only starts on hosts that
+  still have it cached; a fresh host needs a replacement S3 store for Loki.
 - The Tempo datasource expects log lines to carry Serilog's `TraceId` property
   (hex trace id); the Loki derived-field regex links matching lines to Tempo.

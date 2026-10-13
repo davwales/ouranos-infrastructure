@@ -1,6 +1,10 @@
 services:
   postgres:
     image: timescale/timescaledb:2.21.1-pg17
+    command:
+      - postgres
+      - -c
+      - max_connections=200
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
