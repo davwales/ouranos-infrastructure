@@ -1,0 +1,33 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "dependencyDashboard": true,
+  "docker-compose": {
+    "managerFilePatterns": [
+      "/^stacks/.+/(infrastructure|grafana|postgres|pantheon)\\.yaml$/"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Pantheon images track :latest and are updated by Watchtower",
+      "matchPackageNames": ["ghcr.io/davwales/ouranos-pantheon/**"],
+      "enabled": false
+    },
+    {
+      "description": "Update the Grafana observability stack together",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["grafana/**"],
+      "groupName": "grafana stack"
+    },
+    {
+      "description": "Stateful services need a manual migration across major versions",
+      "matchPackageNames": [
+        "timescale/timescaledb",
+        "rabbitmq",
+        "valkey/valkey"
+      ],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    }
+  ]
+}

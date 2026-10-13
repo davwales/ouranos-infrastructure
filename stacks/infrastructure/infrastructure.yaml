@@ -4,7 +4,7 @@ include:
 
 services:
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    image: rabbitmq:3.13.7-management-alpine
     hostname: pantheon-messaging
     ports:
       - "5672:5672"
@@ -30,7 +30,8 @@ services:
     restart: always
 
   flagsmith:
-    image: flagsmith/flagsmith:latest
+    image: flagsmith/flagsmith:2.284.0
+    restart: always
     environment:
       DJANGO_ALLOWED_HOSTS: "*"
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/flagsmith
@@ -41,8 +42,20 @@ services:
       postgres:
         condition: service_healthy
 
+  watchtower:
+    image: ghcr.io/nicholas-fedor/watchtower:1.23.0
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      # Only update containers labeled com.centurylinklabs.watchtower.enable=true
+      # (the pantheon services). Everything else is pinned and bumped by Renovate.
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_POLL_INTERVAL: 300
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_ROLLING_RESTART: "true"
+
 volumes:
   valkey_data:
   rabbitmq_data:
   rabbitmq_logs:
-  postgres_data:
