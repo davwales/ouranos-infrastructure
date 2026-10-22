@@ -1,7 +1,17 @@
 # Migrating ouranos.local from Docker Compose to Quadlets
 
-A one-off runbook. Run everything on `ouranos.local` as root (`sudo -i`), from
-`/home/dwales/ouranos-infrastructure`.
+A one-off runbook. Run everything on `ouranos.local` **in a root shell**, from
+`/home/dwales/ouranos-infrastructure`:
+
+```sh
+git -C /home/dwales/ouranos-infrastructure pull   # as dwales, before becoming root
+sudo -i
+cd /home/dwales/ouranos-infrastructure
+```
+
+Rootless and rootful Podman have separate networks, images and volumes, so
+mixing `podman …` and `sudo podman …` doesn't work: everything here must run as
+root.
 
 **The Docker volumes are never modified or removed.** Data is copied into new
 Podman volumes, and the originals stay as the backup and the rollback path.
@@ -17,7 +27,6 @@ Loki, Tempo and Mimir data in `stacks/infrastructure/grafana/.data/` is
 bind-mounted and is not copied.
 
 ```sh
-cd /home/dwales/ouranos-infrastructure
 VOLS="ouranos_postgres_data ouranos_rabbitmq_data ouranos_rabbitmq_logs ouranos_grafana_data ouranos_valkey_data"
 DOCKER_VOLS=/var/snap/docker/common/var-lib-docker/volumes
 PODMAN_VOLS=/var/lib/containers/storage/volumes
@@ -26,7 +35,6 @@ PODMAN_VOLS=/var/lib/containers/storage/volumes
 ## 1. Prepare (no downtime)
 
 ```sh
-git pull
 QUADLET_UNIT_DIRS=$PWD/quadlets /usr/libexec/podman/quadlet -dryrun -no-kmsg-log >/dev/null && echo units ok
 grep -h '^Image=' quadlets/*.container | cut -d= -f2 | sort -u | xargs -n1 podman pull
 ```
@@ -39,17 +47,10 @@ forwarded traffic before netavark's nftables rules get to accept it. Prove
 Podman networking works while Docker is running:
 
 ```sh
-podman network create smoketest
-podman run -d --name smoke --network smoketest -p 18080:8080 docker.io/library/alpine:3.20 \
-  sh -c 'echo ok > /ok && httpd -f -p 8080 -h /'
-podman run --rm --network smoketest docker.io/library/alpine:3.20 wget -qO- http://smoke:8080/ok   # container DNS
-podman run --rm --network smoketest docker.io/library/alpine:3.20 wget -qO- https://ghcr.io >/dev/null && echo egress ok
-curl -s localhost:18080/ok                                                                           # published port
-podman rm -f smoke && podman network rm smoketest
+./smoketest.sh      # container DNS, egress, published port on localhost and the LAN IP
 ```
 
-Also run `curl ouranos.local:18080/ok` from another machine before removing the
-container. If anything fails, set `"ip-forward-no-drop": true` in
+All four checks must print `ok`. If any fails, set `"ip-forward-no-drop": true` in
 `/var/snap/docker/current/config/daemon.json` and run `snap restart docker`.
 Then repeat the test.
 
