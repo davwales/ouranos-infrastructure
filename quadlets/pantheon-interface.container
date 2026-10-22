@@ -1,0 +1,16 @@
+[Unit]
+Description=Ouranos Pantheon interface
+
+[Container]
+Image=ghcr.io/davwales/ouranos-pantheon/interface:latest
+ContainerName=pantheon-interface
+# Updated by podman-auto-update.timer.
+AutoUpdate=registry
+Network=ouranos.network
+PublishPort=80:3000
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

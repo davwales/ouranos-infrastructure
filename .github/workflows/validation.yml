@@ -17,3 +17,9 @@ jobs:
             cp "$f" "$(dirname "$f")/.env"
           done
       - run: docker compose config --quiet
+      # Same Quadlet version as the prod host; ubuntu-latest ships an older Podman.
+      - name: Validate Quadlets
+        run: |
+          docker run --rm -v "$PWD/quadlets:/q:ro" -e QUADLET_UNIT_DIRS=/q \
+            quay.io/podman/stable:v5.7.0 \
+            /usr/libexec/podman/quadlet -dryrun -no-kmsg-log

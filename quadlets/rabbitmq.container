@@ -1,0 +1,23 @@
+[Unit]
+Description=Ouranos RabbitMQ
+
+[Container]
+Image=docker.io/library/rabbitmq:3.13.7-management-alpine
+ContainerName=rabbitmq
+# The node name rabbit@pantheon-messaging is stored in the data volume; changing it orphans existing queues.
+HostName=pantheon-messaging
+Network=ouranos.network
+PublishPort=5672:5672
+PublishPort=15672:15672
+Environment=RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME}
+Environment=RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+Volume=rabbitmq_data.volume:/var/lib/rabbitmq
+Volume=rabbitmq_logs.volume:/var/log/rabbitmq
+Exec=sh -c "rabbitmq-plugins enable rabbitmq_shovel rabbitmq_shovel_management && rabbitmq-server"
+
+[Service]
+EnvironmentFile=/home/dwales/ouranos-infrastructure/stacks/infrastructure/.env
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
