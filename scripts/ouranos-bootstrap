@@ -1,0 +1,62 @@
+#!/bin/bash
+# Set up Ouranos on a fresh server: install Podman if needed, prepare data
+# directories, install the units and start the stack. Safe to re-run.
+#
+#   git clone https://github.com/davwales/ouranos-infrastructure.git
+#   cd ouranos-infrastructure && sudo scripts/ouranos-bootstrap
+set -euo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+
+as_root "$@"
+
+echo "==> Podman"
+if ! command -v podman >/dev/null; then
+  if command -v apt-get >/dev/null; then
+    apt-get update -q && apt-get install -yq podman netavark aardvark-dns curl
+  elif command -v dnf >/dev/null; then
+    dnf install -yq podman netavark aardvark-dns curl
+  else
+    die "install podman (5.0 or later) and re-run"
+  fi
+fi
+version=$(podman version --format '{{.Client.Version}}')
+[ "${version%%.*}" -ge 5 ] || die "podman $version is too old; the units need 5.0 or later (Notify=healthy)"
+echo "podman $version"
+
+echo "==> Secrets"
+if [ ! -f "$REPO/.env" ]; then
+  install -m 600 -o "$(stat -c %u "$REPO")" -g "$(stat -c %g "$REPO")" "$REPO/sample.env" "$REPO/.env"
+  die "created $REPO/.env from sample.env; fill in real values and re-run"
+fi
+check_env "$REPO/.env"
+grep -qE '=(your-|psql$|rabbitmq$)' "$REPO/.env" \
+  && echo "warning: .env still has sample values; change them before exposing this host" >&2
+
+echo "==> Data directories"
+mkdir -p "$REPO"/stacks/infrastructure/grafana/.data/{loki,tempo,mimir}
+
+echo "==> Firewall"
+# Docker sets the FORWARD policy to DROP, which silently breaks Podman's
+# container networking and published ports. See README.
+if command -v iptables >/dev/null && iptables -S FORWARD 2>/dev/null | grep -x -- '-P FORWARD DROP' >/dev/null; then
+  die "the FORWARD policy is DROP (usually Docker). Set \"ip-forward-no-drop\": true in Docker's daemon.json, restart Docker, run 'iptables -P FORWARD ACCEPT', then re-run"
+fi
+echo "FORWARD policy ok"
+
+echo "==> Units"
+"$REPO/scripts/ouranos-install"
+
+echo "==> Images"
+for image in $(images); do podman pull -q "$image" >/dev/null && echo "$image"; done
+
+echo "==> Starting"
+systemctl start ouranos.target
+systemctl list-dependencies --plain --no-pager ouranos.target | tail -n +2 | while read -r unit; do
+  printf '%-30s %s\n' "$unit" "$(systemctl is-active "$unit")"
+done
+echo
+echo "Done. Services can take a minute to become healthy. Next:"
+echo "  export PATH=\"$REPO/scripts:\$PATH\"   # add to ~/.bashrc"
+echo "  ouranos-health        # check every service"
+echo "  ouranos-smoketest     # check networking from the LAN"

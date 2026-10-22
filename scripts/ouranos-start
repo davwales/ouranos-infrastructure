@@ -1,0 +1,13 @@
+#!/bin/bash
+# Start the whole stack, or only the named services.
+#   ouranos-start [service...]
+set -euo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+
+targets=$(units "$@")
+as_root "$@"
+
+# shellcheck disable=SC2086  # one unit per word
+systemctl start $targets
+"$REPO/scripts/ouranos-status"

@@ -1,4 +1,5 @@
 [Unit]
+PartOf=ouranos.target
 Description=Ouranos Pantheon gateway
 Requires=postgres.service db-init.service rabbitmq.service flagsmith.service
 After=postgres.service db-init.service rabbitmq.service flagsmith.service
@@ -29,8 +30,8 @@ Environment=Ouranos__Plutus__DataLoaders__Stocks__ApiSecret=${ALPACA_API_SECRET}
 Environment=Ouranos__Hermes__ConversationNameModel=qwen2.5-coder-3b-instruct
 
 [Service]
-EnvironmentFile=/home/dwales/ouranos-infrastructure/stacks/pantheon/.env
+EnvironmentFile=@REPO@/.env
 Restart=always
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=ouranos.target

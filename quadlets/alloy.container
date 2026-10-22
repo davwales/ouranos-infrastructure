@@ -1,4 +1,5 @@
 [Unit]
+PartOf=ouranos.target
 Description=Ouranos Alloy
 Wants=loki.service tempo.service mimir.service podman.socket
 After=loki.service tempo.service mimir.service podman.socket
@@ -10,7 +11,7 @@ Network=ouranos.network
 PublishPort=12345:12345
 PublishPort=4317:4317
 PublishPort=4318:4318
-Volume=/home/dwales/ouranos-infrastructure/stacks/infrastructure/grafana/alloy-local-config.yaml:/etc/alloy/config.alloy:ro
+Volume=@REPO@/stacks/infrastructure/grafana/alloy-local-config.yaml:/etc/alloy/config.alloy:ro
 # Podman's Docker-compatible API, so the discovery.docker config works unchanged.
 Volume=/run/podman/podman.sock:/var/run/docker.sock
 Exec=run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
@@ -19,4 +20,4 @@ Exec=run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/d
 Restart=always
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=ouranos.target

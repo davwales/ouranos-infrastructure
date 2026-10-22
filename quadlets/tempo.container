@@ -1,4 +1,5 @@
 [Unit]
+PartOf=ouranos.target
 Description=Ouranos Tempo
 
 [Container]
@@ -7,12 +8,12 @@ ContainerName=tempo
 User=root
 Network=ouranos.network
 PublishPort=3200:3200
-Volume=/home/dwales/ouranos-infrastructure/stacks/infrastructure/grafana/tempo-config.yaml:/etc/tempo.yaml:ro
-Volume=/home/dwales/ouranos-infrastructure/stacks/infrastructure/grafana/.data/tempo:/var/tempo
+Volume=@REPO@/stacks/infrastructure/grafana/tempo-config.yaml:/etc/tempo.yaml:ro
+Volume=@REPO@/stacks/infrastructure/grafana/.data/tempo:/var/tempo
 Exec=-config.file=/etc/tempo.yaml
 
 [Service]
 Restart=always
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=ouranos.target

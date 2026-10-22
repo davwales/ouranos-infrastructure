@@ -1,0 +1,38 @@
+#!/bin/bash
+# Dump every Postgres database (pg_dump custom format) plus roles, while the
+# stack keeps running. Large: pantheon alone is ~150 GB on disk.
+#   ouranos-backup [dir]     default /var/backups/ouranos/<timestamp>
+#
+# Restore a TimescaleDB database into an empty one with:
+#   SELECT timescaledb_pre_restore();  -- then pg_restore -d <db> <file>
+#   SELECT timescaledb_post_restore();
+set -euo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+as_root "$@"
+
+dest=${1:-/var/backups/ouranos/$(date +%Y%m%d-%H%M%S)}
+mkdir -p "$dest"
+chmod 700 "$dest"
+
+# shellcheck disable=SC2016  # expanded inside the container
+pg() { podman exec postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -Atc "$1"' _ "$1"; }
+
+dbs=$(pg "SELECT datname FROM pg_database WHERE NOT datistemplate AND datname <> 'postgres' ORDER BY 1")
+needed=$(pg "SELECT sum(pg_database_size(datname)) FROM pg_database WHERE NOT datistemplate")
+free=$(( $(df --output=avail -B1 "$dest" | tail -1) ))
+echo "Databases: $(echo "$dbs" | tr '\n' ' ')($(numfmt --to=iec "$needed") on disk; $(numfmt --to=iec "$free") free at $dest)"
+# Compressed dumps are usually several times smaller than the data on disk.
+[ "$free" -gt "$((needed / 2))" ] \
+  || echo "warning: free space is under half the database size; the dump may not fit" >&2
+
+# shellcheck disable=SC2016  # expanded inside the container
+podman exec postgres sh -c 'pg_dumpall -U "$POSTGRES_USER" --globals-only' > "$dest/globals.sql"
+for db in $dbs; do
+  echo "Dumping $db..."
+  # shellcheck disable=SC2016  # expanded inside the container
+  podman exec postgres sh -c 'pg_dump -U "$POSTGRES_USER" -Fc "$1"' _ "$db" > "$dest/$db.dump"
+done
+
+ls -lh "$dest"
+echo "Backup written to $dest"

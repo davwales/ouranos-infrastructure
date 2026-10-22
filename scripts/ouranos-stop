@@ -1,0 +1,14 @@
+#!/bin/bash
+# Stop the whole stack, or only the named services. Postgres gets up to
+# 120s to shut down cleanly.
+#   ouranos-stop [service...]
+set -euo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+
+targets=$(units "$@")
+as_root "$@"
+
+# shellcheck disable=SC2086  # one unit per word
+systemctl stop $targets
+"$REPO/scripts/ouranos-status"

@@ -1,0 +1,46 @@
+#!/bin/bash
+# Pull this repo, reinstall the units, and restart the services whose unit
+# files changed (only with --restart; otherwise it lists them).
+#   ouranos-update [--restart]
+# Pantheon images update themselves through podman-auto-update.timer.
+set -euo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+
+restart=false
+[ "${1:-}" = --restart ] && restart=true
+
+# Pull as the checkout's owner so git keeps working for them (and their keys apply).
+owner=$(stat -c %U "$REPO")
+git_() { if [ "$(id -un)" = "$owner" ]; then git -C "$REPO" "$@"; else sudo -u "$owner" git -C "$REPO" "$@"; fi; }
+
+before=$(git_ rev-parse HEAD)
+git_ pull --ff-only
+after=$(git_ rev-parse HEAD)
+
+"$REPO/scripts/ouranos-install"
+
+[ "$before" != "$after" ] || { echo "Already up to date."; exit 0; }
+changed=$(git_ diff --name-only "$before" "$after" -- quadlets/ \
+  | sed -n 's#^quadlets/\(.*\)\.container$#\1#p' \
+  | while read -r s; do if services | grep -x "$s" >/dev/null; then echo "$s"; fi; done)
+other=$(git_ diff --name-only "$before" "$after" -- stacks/ systemd/ quadlets/ | grep -v '\.container$' || true)
+
+if [ -z "$changed$other" ]; then
+  echo "No unit or config changes; nothing to restart."
+  exit 0
+fi
+if [ -n "$other" ]; then
+  echo "Changed config, network or volume files:"
+  echo "  ${other//$'\n'/$'\n'  }"
+  echo "Apply them with a full restart: ouranos-restart"
+fi
+if [ -n "$changed" ]; then
+  if $restart; then
+    # shellcheck disable=SC2086  # one service per word
+    "$REPO/scripts/ouranos-restart" $changed
+  else
+    echo "Changed services: $(echo "$changed" | tr '\n' ' ')"
+    echo "Apply with: ouranos-restart $(echo "$changed" | tr '\n' ' ')"
+  fi
+fi
