@@ -7,24 +7,36 @@
       "/^stacks/.+/(infrastructure|grafana|postgres|pantheon)\\.yaml$/"
     ]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Image= lines in Quadlet units",
+      "managerFilePatterns": ["/^quadlets/.+\\.container$/"],
+      "matchStrings": ["\\nImage=(?<depName>[^:\\s]+):(?<currentValue>[^\\s@]+)\\n"],
+      "datasourceTemplate": "docker"
+    }
+  ],
   "packageRules": [
     {
-      "description": "Pantheon images track :latest and are updated by Watchtower",
+      "description": "Pantheon images track :latest and are updated by podman auto-update",
       "matchPackageNames": ["ghcr.io/davwales/ouranos-pantheon/**"],
       "enabled": false
     },
     {
       "description": "Update the Grafana observability stack together",
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["grafana/**"],
+      "matchPackageNames": ["grafana/**", "docker.io/grafana/**"],
       "groupName": "grafana stack"
     },
     {
       "description": "Stateful services need a manual migration across major versions",
       "matchPackageNames": [
         "timescale/timescaledb",
+        "docker.io/timescale/timescaledb",
         "rabbitmq",
-        "valkey/valkey"
+        "docker.io/library/rabbitmq",
+        "valkey/valkey",
+        "docker.io/valkey/valkey"
       ],
       "matchUpdateTypes": ["major"],
       "dependencyDashboardApproval": true

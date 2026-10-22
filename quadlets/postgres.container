@@ -1,0 +1,30 @@
+[Unit]
+Description=Ouranos Postgres (TimescaleDB)
+
+[Container]
+Image=docker.io/timescale/timescaledb:2.21.1-pg17
+ContainerName=postgres
+Network=ouranos.network
+PublishPort=5432:5432
+Volume=postgres_data.volume:/var/lib/postgresql/data
+Environment=POSTGRES_USER=${POSTGRES_USER}
+Environment=POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+Exec=postgres -c max_connections=200
+HealthCmd=pg_isready -U ${POSTGRES_USER} -d postgres
+HealthInterval=5s
+HealthTimeout=5s
+HealthRetries=5
+# Only report started once healthy, so dependents start after postgres accepts connections.
+Notify=healthy
+# Give postgres time for its shutdown checkpoint instead of being killed after 10s.
+StopTimeout=120
+
+[Service]
+EnvironmentFile=/home/dwales/ouranos-infrastructure/stacks/infrastructure/.env
+Restart=always
+# Leaves room for WAL replay after an unclean stop.
+TimeoutStartSec=600
+TimeoutStopSec=150
+
+[Install]
+WantedBy=multi-user.target

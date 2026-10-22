@@ -1,0 +1,20 @@
+[Unit]
+Description=Ouranos Flagsmith
+Requires=postgres.service
+After=postgres.service db-init.service
+
+[Container]
+Image=docker.io/flagsmith/flagsmith:2.284.0
+ContainerName=flagsmith
+Network=ouranos.network
+PublishPort=8001:8000
+Environment=DJANGO_ALLOWED_HOSTS=*
+Environment=DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/flagsmith
+Environment=ENV=prod
+
+[Service]
+EnvironmentFile=/home/dwales/ouranos-infrastructure/stacks/infrastructure/.env
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

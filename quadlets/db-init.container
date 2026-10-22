@@ -1,0 +1,25 @@
+[Unit]
+Description=Ouranos database bootstrap
+Requires=postgres.service
+After=postgres.service
+
+[Container]
+Image=docker.io/timescale/timescaledb:2.21.1-pg17
+ContainerName=db-init
+Network=ouranos.network
+Environment=PGUSER=${POSTGRES_USER}
+Environment=PGPASSWORD=${POSTGRES_PASSWORD}
+Environment=PGHOST=postgres
+Environment="INIT_DATABASES=pantheon, flagsmith"
+Volume=/home/dwales/ouranos-infrastructure/stacks/infrastructure/postgres/init-databases.sh:/init-databases.sh:ro
+Exec=/bin/bash /init-databases.sh
+
+[Service]
+EnvironmentFile=/home/dwales/ouranos-infrastructure/stacks/infrastructure/.env
+Type=oneshot
+RemainAfterExit=yes
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

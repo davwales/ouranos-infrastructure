@@ -1,0 +1,16 @@
+[Unit]
+Description=Ouranos Valkey
+
+[Container]
+Image=docker.io/valkey/valkey:9.0.3
+ContainerName=valkey
+Network=ouranos.network
+PublishPort=6379:6379
+Volume=valkey_data.volume:/data
+Exec=valkey-server --save 60 1 --loglevel warning
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

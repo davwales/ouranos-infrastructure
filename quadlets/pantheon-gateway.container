@@ -1,0 +1,36 @@
+[Unit]
+Description=Ouranos Pantheon gateway
+Requires=postgres.service db-init.service rabbitmq.service flagsmith.service
+After=postgres.service db-init.service rabbitmq.service flagsmith.service
+
+[Container]
+Image=ghcr.io/davwales/ouranos-pantheon/gateway:latest
+ContainerName=pantheon-gateway
+# Updated by podman-auto-update.timer.
+AutoUpdate=registry
+Network=ouranos.network
+PublishPort=8300:8300
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_HTTP_PORTS=8300
+Environment=Ouranos__IncludeExceptionDetails=true
+Environment=Ouranos__RequestTimeout=180
+Environment=Ouranos__Postgres__Host=postgres
+Environment=Ouranos__Postgres__Username=${POSTGRES_USER}
+Environment=Ouranos__Postgres__Password=${POSTGRES_PASSWORD}
+Environment=Ouranos__RabbitMq__Host=rabbitmq
+Environment=Ouranos__RabbitMq__Username=${RABBITMQ_USERNAME}
+Environment=Ouranos__RabbitMq__Password=${RABBITMQ_PASSWORD}
+Environment=Ouranos__OuranosMl__ConnectionString=${OURANOS_ML_URL}
+Environment=Ouranos__Flagsmith__ApiUrl=http://flagsmith:8000/api/v1/
+Environment=Ouranos__Flagsmith__EnvironmentKey=${FLAGSMITH_ENV_KEY}
+Environment=Ouranos__Plutus__DataLoaders__Osrs__Wiki__UserAgent=${OSRS_WIKI_USER_AGENT}
+Environment=Ouranos__Plutus__DataLoaders__Stocks__ApiKey=${ALPACA_API_KEY}
+Environment=Ouranos__Plutus__DataLoaders__Stocks__ApiSecret=${ALPACA_API_SECRET}
+Environment=Ouranos__Hermes__ConversationNameModel=qwen2.5-coder-3b-instruct
+
+[Service]
+EnvironmentFile=/home/dwales/ouranos-infrastructure/stacks/pantheon/.env
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

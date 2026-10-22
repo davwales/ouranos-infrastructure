@@ -1,0 +1,17 @@
+[Unit]
+Description=Ouranos Mimir
+
+[Container]
+Image=docker.io/grafana/mimir:3.2.0
+ContainerName=mimir
+Network=ouranos.network
+PublishPort=9009:9009
+Volume=/home/dwales/ouranos-infrastructure/stacks/infrastructure/grafana/mimir-config.yaml:/etc/mimir/mimir.yaml:ro
+Volume=/home/dwales/ouranos-infrastructure/stacks/infrastructure/grafana/.data/mimir:/data
+Exec=--config.file=/etc/mimir/mimir.yaml
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
