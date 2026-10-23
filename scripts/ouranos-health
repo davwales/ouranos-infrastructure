@@ -1,0 +1,86 @@
+#!/bin/bash
+# Check that every Ouranos service is running and answering. Exits 1 if any
+# check fails, so it can also run from cron or a monitor.
+#   ouranos-health [-q]    -q prints only problems
+set -uo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+as_root "$@"
+
+quiet=false
+[ "${1:-}" = -q ] && quiet=true
+failed=0
+
+report() {  # level name detail
+  case $1 in
+    FAIL) failed=1 ;;
+    ok) $quiet && return ;;
+  esac
+  printf '%-5s %-22s %s\n' "$1" "$2" "$3"
+}
+
+# Retries ride out services that flap briefly (e.g. Mimir's /ready).
+http() {  # name url
+  local code i
+  for i in 1 2 3; do
+    code=$(curl -s -o /dev/null -m 5 -w '%{http_code}' "$2")
+    [ "$code" = 200 ] && { report ok "$1" "$2"; return; }
+    [ $i -lt 3 ] && sleep 2
+  done
+  report FAIL "$1" "$2 returned ${code/000/no response}"
+}
+
+in_container() {  # name container command...
+  local name=$1 container=$2; shift 2
+  if out=$(podman exec "$container" "$@" 2>&1); then
+    report ok "$name" "${out%%$'\n'*}"
+  else
+    report FAIL "$name" "${out%%$'\n'*}"
+  fi
+}
+
+$quiet || echo "== units"
+if systemctl is-active --quiet ouranos.target; then report ok ouranos.target active
+else report FAIL ouranos.target "$(systemctl is-active ouranos.target)"; fi
+for s in $(services); do
+  state=$(systemctl is-active "$s.service")
+  restarts=$(systemctl show -p NRestarts --value "$s.service")
+  if [ "$state" != active ]; then report FAIL "$s" "$state"
+  elif [ "${restarts:-0}" -gt 0 ]; then report WARN "$s" "active, but restarted $restarts time(s)"
+  else report ok "$s" active; fi
+done
+if systemctl is-active --quiet podman-auto-update.timer; then report ok auto-update "timer active"
+else report WARN auto-update "podman-auto-update.timer is not active; pantheon images won't update"; fi
+
+$quiet || echo "== container health checks"
+for s in $(services); do
+  [ "$s" = db-init ] && continue  # one-shot, exits once done
+  health=$(podman inspect -f '{{.State.Health.Status}}' "$s" 2>/dev/null) || { report FAIL "$s" "no container"; continue; }
+  case $health in
+    healthy) report ok "$s" healthy ;;
+    starting) report WARN "$s" "health check still starting" ;;
+    "") ;;  # image has no health check
+    *) report FAIL "$s" "$health" ;;
+  esac
+done
+
+$quiet || echo "== endpoints"
+http pantheon-interface http://localhost:80/
+http pantheon-gateway http://localhost:8300/health
+http flagsmith http://localhost:8001/health
+http grafana http://localhost:3000/api/health
+http loki http://localhost:3100/ready
+http tempo http://localhost:3200/ready
+http mimir http://localhost:9009/ready
+http alloy http://localhost:12345/-/ready
+http rabbitmq-ui http://localhost:15672/
+
+$quiet || echo "== datastores"
+# shellcheck disable=SC2016  # expanded inside the container
+in_container postgres postgres sh -c 'pg_isready -U "$POSTGRES_USER" -d postgres'
+in_container valkey valkey valkey-cli ping
+in_container rabbitmq rabbitmq rabbitmq-diagnostics -q check_running
+
+if [ $failed -eq 0 ]; then $quiet || echo "All checks passed."
+else echo "Some checks failed." >&2; fi
+exit $failed

@@ -1,0 +1,42 @@
+#!/bin/bash
+# Check that rootful Podman networking works: container DNS, egress and
+# published ports, including from the LAN (Docker can silently break these).
+# Runs as root (via sudo): rootless Podman has a separate network stack.
+set -uo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+as_root "$@"
+
+image=docker.io/library/busybox:1.37
+port=18080
+failed=0
+
+check() {
+  local name=$1; shift
+  if "$@" >/dev/null 2>&1; then echo "ok    $name"; else echo "FAIL  $name"; failed=1; fi
+}
+
+cleanup() {
+  podman rm -f smoke >/dev/null 2>&1
+  podman network rm smoketest >/dev/null 2>&1
+}
+trap cleanup EXIT
+cleanup
+
+podman network create smoketest >/dev/null
+podman run -d --name smoke --network smoketest -p "$port:8080" "$image" \
+  sh -c 'mkdir /www && echo ok > /www/ok && httpd -f -p 8080 -h /www' >/dev/null
+sleep 2
+
+check "container DNS (smoke:8080)" podman run --rm --network smoketest "$image" wget -T 5 -qO- http://smoke:8080/ok
+check "egress to the internet"     podman run --rm --network smoketest "$image" wget -T 5 -q -O /dev/null http://example.com
+check "published port (localhost)" sh -c "curl -sf -m 5 http://localhost:$port/ok | grep -qx ok"
+
+# Traffic from the host itself never crosses the FORWARD chain, so only a
+# request from another machine proves LAN clients can reach published ports.
+echo
+echo "From another machine, run:  curl -m 5 http://$(hostname).local:$port/ok"
+read -r -p "Did it print ok? [y/N] " answer
+if [ "$answer" = y ] || [ "$answer" = Y ]; then echo "ok    published port (from the LAN)"; else echo "FAIL  published port (from the LAN)"; failed=1; fi
+
+exit $failed

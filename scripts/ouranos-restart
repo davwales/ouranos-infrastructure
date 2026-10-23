@@ -1,0 +1,14 @@
+#!/bin/bash
+# Restart the whole stack, or only the named services. Services that
+# depend on a restarted one (e.g. pantheon-gateway on postgres) restart too.
+#   ouranos-restart [service...]
+set -euo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+
+targets=$(units "$@")
+as_root "$@"
+
+# shellcheck disable=SC2086  # one unit per word
+systemctl restart $targets
+"$REPO/scripts/ouranos-status"

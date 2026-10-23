@@ -1,4 +1,5 @@
 [Unit]
+PartOf=ouranos.target
 Description=Ouranos Postgres (TimescaleDB)
 
 [Container]
@@ -20,11 +21,11 @@ Notify=healthy
 StopTimeout=120
 
 [Service]
-EnvironmentFile=/home/dwales/ouranos-infrastructure/stacks/infrastructure/.env
+EnvironmentFile=@REPO@/.env
 Restart=always
 # Leaves room for WAL replay after an unclean stop.
 TimeoutStartSec=600
 TimeoutStopSec=150
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=ouranos.target

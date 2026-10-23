@@ -2,11 +2,6 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "dependencyDashboard": true,
-  "docker-compose": {
-    "managerFilePatterns": [
-      "/^stacks/.+/(infrastructure|grafana|postgres|pantheon)\\.yaml$/"
-    ]
-  },
   "customManagers": [
     {
       "customType": "regex",
