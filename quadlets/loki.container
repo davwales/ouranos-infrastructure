@@ -10,8 +10,8 @@ Network=ouranos.network
 # Temporary: pantheon still pushes to loki-gateway:3100.
 NetworkAlias=loki-gateway
 PublishPort=3100:3100
-Volume=@REPO@/stacks/infrastructure/grafana/loki-config.yaml:/etc/loki/config.yaml:ro
-Volume=@REPO@/stacks/infrastructure/grafana/.data/loki:/loki
+Volume=@REPO@/config/loki/config.yaml:/etc/loki/config.yaml:ro
+Volume=loki_data.volume:/loki
 Exec=-config.file=/etc/loki/config.yaml -target=all
 HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1
 HealthInterval=10s

@@ -49,9 +49,11 @@ means the whole stack.
   where this checkout lives.
 - `.env` (from `sample.env`): the one secrets file. Units expand its values
   with `${VAR}`; `ouranos-install` refuses to run if any are missing.
-- `stacks/`: config files the containers mount (Grafana, Loki, Tempo, Mimir,
-  Alloy, the Postgres init script). Loki, Tempo and Mimir keep their data in
-  `stacks/infrastructure/grafana/.data/`; everything else is in Podman volumes
+- `config/`: one folder per service with the config files its container
+  mounts read-only (Alloy, Grafana datasources, Loki, Tempo, Mimir, the Postgres
+  init script). See [docs/observability.md](docs/observability.md) for the
+  telemetry stack.
+- State lives in named Podman volumes, one `*_data.volume` per service
   (`podman volume ls`).
 - `systemd/`: `ouranos.target` and the 5-minute `podman-auto-update` timer.
 

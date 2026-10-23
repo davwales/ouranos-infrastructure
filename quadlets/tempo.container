@@ -8,8 +8,8 @@ ContainerName=tempo
 User=root
 Network=ouranos.network
 PublishPort=3200:3200
-Volume=@REPO@/stacks/infrastructure/grafana/tempo-config.yaml:/etc/tempo.yaml:ro
-Volume=@REPO@/stacks/infrastructure/grafana/.data/tempo:/var/tempo
+Volume=@REPO@/config/tempo/config.yaml:/etc/tempo.yaml:ro
+Volume=tempo_data.volume:/var/tempo
 Exec=-config.file=/etc/tempo.yaml
 
 [Service]

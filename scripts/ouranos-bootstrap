@@ -1,6 +1,6 @@
 #!/bin/bash
-# Set up Ouranos on a fresh server: install Podman if needed, prepare data
-# directories, install the units and start the stack. Safe to re-run.
+# Set up Ouranos on a fresh server: install Podman if needed, install
+# the units and start the stack. Safe to re-run.
 #
 #   git clone https://github.com/davwales/ouranos-infrastructure.git
 #   cd ouranos-infrastructure && sudo scripts/ouranos-bootstrap
@@ -32,9 +32,6 @@ fi
 check_env "$REPO/.env"
 grep -qE '=(your-|psql$|rabbitmq$)' "$REPO/.env" \
   && echo "warning: .env still has sample values; change them before exposing this host" >&2
-
-echo "==> Data directories"
-mkdir -p "$REPO"/stacks/infrastructure/grafana/.data/{loki,tempo,mimir}
 
 echo "==> Firewall"
 # Docker sets the FORWARD policy to DROP, which silently breaks Podman's

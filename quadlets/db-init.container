@@ -12,7 +12,7 @@ Environment=PGUSER=${POSTGRES_USER}
 Environment=PGPASSWORD=${POSTGRES_PASSWORD}
 Environment=PGHOST=postgres
 Environment="INIT_DATABASES=pantheon, flagsmith"
-Volume=@REPO@/stacks/infrastructure/postgres/init-databases.sh:/init-databases.sh:ro
+Volume=@REPO@/config/postgres/init-databases.sh:/init-databases.sh:ro
 Exec=/bin/bash /init-databases.sh
 
 [Service]

@@ -24,7 +24,7 @@ after=$(git_ rev-parse HEAD)
 changed=$(git_ diff --name-only "$before" "$after" -- quadlets/ \
   | sed -n 's#^quadlets/\(.*\)\.container$#\1#p' \
   | while read -r s; do if services | grep -x "$s" >/dev/null; then echo "$s"; fi; done)
-other=$(git_ diff --name-only "$before" "$after" -- stacks/ systemd/ quadlets/ | grep -v '\.container$' || true)
+other=$(git_ diff --name-only "$before" "$after" -- config/ systemd/ quadlets/ | grep -v '\.container$' || true)
 
 if [ -z "$changed$other" ]; then
   echo "No unit or config changes; nothing to restart."

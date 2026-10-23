@@ -7,8 +7,8 @@ Image=docker.io/grafana/mimir:3.2.0
 ContainerName=mimir
 Network=ouranos.network
 PublishPort=9009:9009
-Volume=@REPO@/stacks/infrastructure/grafana/mimir-config.yaml:/etc/mimir/mimir.yaml:ro
-Volume=@REPO@/stacks/infrastructure/grafana/.data/mimir:/data
+Volume=@REPO@/config/mimir/config.yaml:/etc/mimir/mimir.yaml:ro
+Volume=mimir_data.volume:/data
 Exec=--config.file=/etc/mimir/mimir.yaml
 
 [Service]
