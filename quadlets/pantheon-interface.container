@@ -8,6 +8,8 @@ ContainerName=pantheon-interface
 AutoUpdate=registry
 Network=ouranos.network
 PublishPort=80:3000
+# Server-side rendering reaches the gateway over the container network; the browser derives its own URL.
+Environment=API_BASE=http://pantheon-gateway:8300
 
 [Service]
 Restart=always
