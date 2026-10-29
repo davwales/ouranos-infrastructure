@@ -1,0 +1,22 @@
+#!/bin/bash
+# Show each service's state, how long it has been in that state and how often
+# systemd has restarted it. Doesn't need root.
+#   ouranos-status
+set -euo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+
+row() {
+  local unit=$1 state sub since restarts
+  state=$(systemctl show -p ActiveState --value "$unit")
+  sub=$(systemctl show -p SubState --value "$unit")
+  since=$(systemctl show -p StateChangeTimestamp --value "$unit")
+  restarts=$(systemctl show -p NRestarts --value "$unit")
+  printf '%-22s %-20s %-28s %s\n' "${unit%.service}" "$state ($sub)" "${since:--}" "${restarts:--}"
+}
+
+printf '%-22s %-20s %-28s %s\n' SERVICE STATE SINCE RESTARTS
+row ouranos.target
+for s in $(services); do row "$s.service"; done
+echo
+echo "Next image check: $(systemctl show -p NextElapseUSecRealtime --value podman-auto-update.timer)"

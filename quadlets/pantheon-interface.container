@@ -1,4 +1,5 @@
 [Unit]
+PartOf=ouranos.target
 Description=Ouranos Pantheon interface
 
 [Container]
@@ -15,4 +16,4 @@ Environment=API_BASE=http://pantheon-gateway:8300
 Restart=always
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=ouranos.target

@@ -1,0 +1,26 @@
+#!/bin/bash
+# Check the Quadlets with the same Quadlet version as the prod host, inside a
+# container, so it works without root or a local Podman 5. Used by CI.
+set -euo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+
+PODMAN_IMAGE=quay.io/podman/stable:v5.7.0
+
+engine=$(command -v docker || command -v podman) || die "needs docker or podman"
+
+rendered=$(mktemp -d)
+trap 'rm -rf "$rendered"' EXIT
+render "$rendered" /srv/ouranos-infrastructure
+chmod -R a+rX "$rendered"
+
+if ! out=$("$engine" run --rm --security-opt label=disable -v "$rendered:/q:ro" -e QUADLET_UNIT_DIRS=/q \
+  "$PODMAN_IMAGE" /usr/libexec/podman/quadlet -dryrun -no-kmsg-log 2>&1); then
+  echo "$out" | grep -v "Loading source unit file" | grep "quadlet-generator" >&2
+  die "quadlet rejected the units"
+fi
+echo "ok    quadlet accepts all units"
+
+missing=$(for v in $(required_vars); do grep -q "^$v=" "$REPO/sample.env" || echo "$v"; done)
+[ -z "$missing" ] || die "sample.env is missing: ${missing//$'\n'/ }"
+echo "ok    sample.env defines every variable the units use"

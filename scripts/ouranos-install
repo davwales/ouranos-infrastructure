@@ -1,0 +1,44 @@
+#!/bin/bash
+# Render the Quadlets for this checkout and install them as rootful systemd
+# units. Safe to re-run; do so after every git pull. Starts nothing.
+set -euo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+
+as_root "$@"
+check_env "$REPO/.env"
+
+staged=$(mktemp -d)
+trap 'rm -rf "$staged"' EXIT
+render "$staged"
+touch "$staged/$MARKER"
+if ! out=$(QUADLET_UNIT_DIRS=$staged "$(quadlet_bin)" -dryrun -no-kmsg-log 2>&1); then
+  echo "$out" | grep -v 'Loading source unit file' | grep 'quadlet-generator' >&2
+  die "quadlet rejected the units"
+fi
+
+# Replace the previous install. Older installs were a symlink to quadlets/.
+if [ -L "$QUADLET_DEST" ]; then
+  rm "$QUADLET_DEST"
+elif [ -e "$QUADLET_DEST" ]; then
+  [ -e "$QUADLET_DEST/$MARKER" ] || die "$QUADLET_DEST exists but was not created by this script"
+  rm -rf "$QUADLET_DEST"
+fi
+mkdir -p "$(dirname "$QUADLET_DEST")"
+cp -r "$staged" "$QUADLET_DEST"
+chmod 755 "$QUADLET_DEST"
+
+install -D -m 644 "$REPO/systemd/ouranos.target" /etc/systemd/system/ouranos.target
+install -D -m 644 "$REPO/systemd/podman-auto-update.timer.d/override.conf" \
+  /etc/systemd/system/podman-auto-update.timer.d/override.conf
+
+systemctl daemon-reload
+systemctl enable podman.socket podman-auto-update.timer ouranos.target
+systemctl start podman.socket podman-auto-update.timer
+
+echo "Installed units for $REPO into $QUADLET_DEST."
+if systemctl is-active --quiet ouranos.target; then
+  echo "The stack is running; apply changes with: systemctl restart ouranos.target"
+else
+  echo "Start the stack with: systemctl start ouranos.target"
+fi

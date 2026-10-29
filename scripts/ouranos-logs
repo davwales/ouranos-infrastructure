@@ -1,0 +1,24 @@
+#!/bin/bash
+# Show logs for one service, or for the whole stack interleaved. Anything after
+# the service name goes to journalctl.
+#   ouranos-logs                   last 50 lines from every service
+#   ouranos-logs postgres -f       follow postgres
+#   ouranos-logs pantheon-gateway --since "1 hour ago"
+set -euo pipefail
+# shellcheck source=scripts/common.sh
+. "$(dirname "$(readlink -f "$0")")/common.sh"
+
+if [ $# -gt 0 ] && [ "${1#-}" = "$1" ]; then
+  selected=$(units "$1")
+else
+  selected=$(for s in $(services); do echo "$s.service"; done)
+fi
+
+# Members of adm or systemd-journal can read the system journal without root.
+id -nG | grep -wE 'adm|systemd-journal' >/dev/null || as_root "$@"
+if [ $# -gt 0 ] && [ "${1#-}" = "$1" ]; then shift; fi
+[ $# -gt 0 ] || set -- -n 50 --no-pager
+
+args=()
+for u in $selected; do args+=(-u "$u"); done
+exec journalctl "${args[@]}" "$@"
